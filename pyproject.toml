@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "java-web-frameworks"
+version = "0.1.0"
+description = ""
+authors = ["István Földházi <istvan.foldhazi@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "java_web_frameworks", from = "." },
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+rich = "^13.7.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.scripts]
+start = "java_web_frameworks.__main__:main"

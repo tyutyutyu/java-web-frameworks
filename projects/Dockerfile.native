@@ -1,0 +1,19 @@
+FROM ghcr.io/graalvm/native-image-community:22.0.0-muslib-ol8-20240319 as builder
+
+COPY pom.xml /home/app/pom.xml
+COPY .mvn /home/app/.mvn
+COPY mvnw /home/app/mvnw
+COPY src /home/app/src
+
+WORKDIR /home/app
+RUN --mount=type=cache,target=/root/.m2 ./mvnw --batch-mode package -Pnative -DskipTests
+
+
+FROM alpine as runner
+
+RUN apk add --no-cache coreutils libc6-compat
+
+COPY entrypoint-native.sh /entrypoint.sh
+COPY --from=builder /home/app/target/app /app
+
+ENTRYPOINT [ "/entrypoint.sh" ]
