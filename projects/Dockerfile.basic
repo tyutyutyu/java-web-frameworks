@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21.0.2_13-jdk-alpine as builder
+FROM eclipse-temurin:21.0.3_9-jdk-alpine as builder
 
 COPY pom.xml /home/app/pom.xml
 COPY .mvn /home/app/.mvn
@@ -9,7 +9,7 @@ WORKDIR /home/app
 RUN --mount=type=cache,target=/root/.m2 ./mvnw package -DskipTests
 
 
-FROM eclipse-temurin:21.0.2_13-jre-alpine as runner
+FROM eclipse-temurin:21.0.3_9-jre-alpine as runner
 
 RUN apk add --no-cache coreutils
 
