@@ -1,0 +1,72 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - master
+      - develop
+
+jobs:
+  spring-boot-maven:
+    name: Spring Boot Maven
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+          cache-dependency-path: projects/spring-boot-maven/pom.xml
+
+      - name: Build and test
+        working-directory: projects/spring-boot-maven
+        run: ./mvnw --batch-mode verify
+
+  quarkus-maven:
+    name: Quarkus Maven
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+          cache-dependency-path: projects/quarkus-maven/pom.xml
+
+      - name: Build and test
+        working-directory: projects/quarkus-maven
+        run: ./mvnw --batch-mode verify
+
+  micronaut-maven:
+    name: Micronaut Maven
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+          cache-dependency-path: projects/micronaut-maven/pom.xml
+
+      - name: Build and test
+        working-directory: projects/micronaut-maven
+        run: ./mvnw --batch-mode verify
