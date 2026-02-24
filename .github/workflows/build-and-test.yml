@@ -22,7 +22,7 @@ jobs:
       - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25-ea'
           distribution: 'temurin'
           cache: maven
           cache-dependency-path: projects/spring-boot-maven/pom.xml
@@ -42,7 +42,7 @@ jobs:
       - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25-ea'
           distribution: 'temurin'
           cache: maven
           cache-dependency-path: projects/quarkus-maven/pom.xml
@@ -62,7 +62,7 @@ jobs:
       - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25-ea'
           distribution: 'temurin'
           cache: maven
           cache-dependency-path: projects/micronaut-maven/pom.xml
