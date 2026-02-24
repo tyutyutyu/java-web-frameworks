@@ -21,19 +21,19 @@ def get_value_from_time(output: str, pattern: re.Pattern):
     return re.search(pattern, output, flags=re.RegexFlag.MULTILINE).group(1)
 
 
-def process_container_output(output: bytearray):
-    output = output.decode("utf-8")
+def process_container_output(output: bytes):
+    decoded = output.decode("utf-8")
 
-    user_time = get_value_from_time(output, r"User time \(seconds\): ([0-9.]+)")
-    system_time = get_value_from_time(output, r"System time \(seconds\): ([0-9.]+)")
-    cpu_percent = get_value_from_time(output, r"Percent of CPU this job got: (\d+)%")
+    user_time = get_value_from_time(decoded, r"User time \(seconds\): ([0-9.]+)")
+    system_time = get_value_from_time(decoded, r"System time \(seconds\): ([0-9.]+)")
+    cpu_percent = get_value_from_time(decoded, r"Percent of CPU this job got: (\d+)%")
     time_used = get_value_from_time(
-        output, r"Elapsed \(wall clock\) time \(h:mm:ss or m:ss\): ([0-9ms. ]+)"
+        decoded, r"Elapsed \(wall clock\) time \(h:mm:ss or m:ss\): ([0-9ms. ]+)"
     )
 
     memory_used = re.search(
         r"Maximum resident set size \(kbytes\): ([0-9]+)",
-        output,
+        decoded,
         flags=re.RegexFlag.MULTILINE,
     ).group(1)
 
@@ -43,29 +43,29 @@ def process_container_output(output: bytearray):
         cpu_percent,
         time_used,
         int(memory_used),
-        round(get_logged_time(output, "STARTING JAVA") / 1_000_000),
-        get_logged_time(output, "JAVA STARTED"),
-        get_logged_time(output, "FRAMEWORK STARTED"),
-        get_logged_time(output, "START FRAMEWORK SHUTDOWN"),
-        round(get_logged_time(output, "JAVA STOPPED") / 1_000_000),
+        round(get_logged_time(decoded, "STARTING JAVA") / 1_000_000),
+        get_logged_time(decoded, "JAVA STARTED"),
+        get_logged_time(decoded, "FRAMEWORK STARTED"),
+        get_logged_time(decoded, "START FRAMEWORK SHUTDOWN"),
+        round(get_logged_time(decoded, "JAVA STOPPED") / 1_000_000),
     )
 
 
-def process_dive_output(output: bytearray):
-    output = output.decode("utf-8")
-    output = output.split("{", maxsplit=1)[1]
-    output = "{" + output
-    json_data = json.loads(output)
+def process_dive_output(output: bytes):
+    decoded = output.decode("utf-8")
+    decoded = decoded.split("{", maxsplit=1)[1]
+    decoded = "{" + decoded
+    json_data = json.loads(decoded)
     sizeBytes = json_data["image"]["sizeBytes"]
     efficiencyScore = json_data["image"]["efficiencyScore"]
     return sizeBytes, efficiencyScore
 
 
-def run_maven(project: str, type: str):
+def run_maven(project: str, build_type: str):
     rprint("Running Maven...")
     work_dir = os.path.join(os.getcwd(), "projects", project)
 
-    docker_image = f"java-web-frameworks/{project}_{type}"
+    docker_image = f"java-web-frameworks/{project}_{build_type}"
 
     rprint(
         "----------------------------------------------------------------------------------"
@@ -78,7 +78,7 @@ def run_maven(project: str, type: str):
         "docker",
         "build",
         "--file",
-        f"../Dockerfile.{type}",
+        f"../Dockerfile.{build_type}",
         "--tag",
         docker_image,
     ]
@@ -100,12 +100,12 @@ def run_maven(project: str, type: str):
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
+    build_output, _ = process.communicate()
     if DEBUG:
-        for c in iter(lambda: process.stdout.read(1), b""):
-            sys.stdout.buffer.write(c)
-    retval = process.wait()
+        sys.stdout.buffer.write(build_output)
+    retval = process.returncode
     if retval != 0:
-        raise Exception(f"Error: {retval}")
+        raise Exception(f"Docker build failed (exit {retval}):\n{build_output.decode('utf-8', errors='replace')}")
     end = time.time_ns()
     build_duration = round((end - start) / 1_000_000)
     rprint(f"Docker build returned {retval} in {build_duration}ms")
@@ -118,12 +118,7 @@ def run_maven(project: str, type: str):
     command = [
         "docker",
         "run",
-        "--interactive",
-        "--tty",
         "--rm",
-        # "--memory=256m",
-        # "--memory-swap=256m",
-        # "--cpus=1",
         docker_image,
     ]
 
@@ -134,14 +129,12 @@ def run_maven(project: str, type: str):
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
-    output = bytearray()
-    for c in iter(lambda: process.stdout.read(1), b""):
-        if DEBUG:
-            sys.stdout.buffer.write(c)
-        output += c
-    retval = process.wait()
+    output, _ = process.communicate()
+    if DEBUG:
+        sys.stdout.buffer.write(output)
+    retval = process.returncode
     if retval != 0:
-        raise Exception(f"Error: {retval}")
+        raise Exception(f"Docker run failed (exit {retval}):\n{output.decode('utf-8', errors='replace')}")
 
     (
         user_time,
@@ -177,22 +170,20 @@ def run_maven(project: str, type: str):
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
-    output = bytearray()
-    for c in iter(lambda: process.stdout.read(1), b""):
-        if DEBUG:
-            sys.stdout.buffer.write(c)
-        output += c
-    retval = process.wait()
+    dive_output, _ = process.communicate()
+    if DEBUG:
+        sys.stdout.buffer.write(dive_output)
+    retval = process.returncode
     if retval != 0:
-        raise Exception(f"Error: {retval}")
-    sizeBytes, efficiencyScore = process_dive_output(output)
+        raise Exception(f"Dive failed (exit {retval}):\n{dive_output.decode('utf-8', errors='replace')}")
+    sizeBytes, efficiencyScore = process_dive_output(dive_output)
 
     rprint(
         "----------------------------------------------------------------------------------"
     )
 
     return (
-        f"{project}_{type}",
+        f"{project}_{build_type}",
         {
             "build_duration": build_duration,
             "user_time": user_time,
@@ -239,6 +230,13 @@ def run():
     )
     if DEBUG:
         rprint(f"Results: {results}")
+
+    results_dir = os.path.join(os.getcwd(), "benchmark-results")
+    os.makedirs(results_dir, exist_ok=True)
+    results_path = os.path.join(results_dir, "results.json")
+    with open(results_path, "w") as f:
+        json.dump(results, f, indent=2)
+    rprint(f"Results saved to {results_path}")
 
     table = Table(title="Results")
 
