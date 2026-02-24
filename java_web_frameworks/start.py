@@ -231,9 +231,12 @@ def run():
     if DEBUG:
         rprint(f"Results: {results}")
 
-    with open("results.json", "w") as f:
+    results_dir = os.path.join(os.getcwd(), "benchmark-results")
+    os.makedirs(results_dir, exist_ok=True)
+    results_path = os.path.join(results_dir, "results.json")
+    with open(results_path, "w") as f:
         json.dump(results, f, indent=2)
-    rprint("Results saved to results.json")
+    rprint(f"Results saved to {results_path}")
 
     table = Table(title="Results")
 
