@@ -225,6 +225,12 @@ def run():
     res = run_maven("spring-boot-maven", "native")
     results[res[0]] = res[1]
 
+    res = run_maven("helidon-maven", "basic")
+    results[res[0]] = res[1]
+
+    res = run_maven("helidon-maven", "native")
+    results[res[0]] = res[1]
+
     rprint(
         "----------------------------------------------------------------------------------"
     )
