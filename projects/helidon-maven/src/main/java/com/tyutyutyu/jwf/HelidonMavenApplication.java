@@ -11,13 +11,17 @@ public class HelidonMavenApplication {
         WebServer server = WebServer.builder()
                 .addRouting(HttpRouting.builder()
                         .get("/hello", (req, res) -> res.send("Hello from Helidon")))
-                .build()
-                .start();
+                .build();
 
-        System.out.println("[JWF] FRAMEWORK STARTED: " + System.currentTimeMillis());
-
-        System.out.println("[JWF] START FRAMEWORK SHUTDOWN: " + System.currentTimeMillis());
-        server.stop();
+        server.start()
+                .thenApply(ws -> {
+                    System.out.println("[JWF] FRAMEWORK STARTED: " + System.currentTimeMillis());
+                    System.out.println("[JWF] START FRAMEWORK SHUTDOWN: " + System.currentTimeMillis());
+                    return ws;
+                })
+                .thenCompose(WebServer::shutdown)
+                .toCompletableFuture()
+                .join();
     }
 
 }
