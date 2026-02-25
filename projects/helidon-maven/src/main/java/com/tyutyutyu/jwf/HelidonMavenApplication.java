@@ -1,7 +1,6 @@
 package com.tyutyutyu.jwf;
 
 import io.helidon.webserver.WebServer;
-import io.helidon.webserver.http.HttpRouting;
 
 public class HelidonMavenApplication {
 
@@ -9,7 +8,7 @@ public class HelidonMavenApplication {
         System.out.println("[JWF] JAVA STARTED: " + System.currentTimeMillis());
 
         WebServer server = WebServer.builder()
-                .addRouting(HttpRouting.builder()
+                .routing(routing -> routing
                         .get("/hello", (req, res) -> res.send("Hello from Helidon")))
                 .build();
 
