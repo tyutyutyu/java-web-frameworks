@@ -4,7 +4,7 @@
         "config:recommended"
     ],
     "configMigration": true,
-    "baseBranches": [
+    "baseBranchPatterns": [
         "develop"
     ],
     "packageRules": [
