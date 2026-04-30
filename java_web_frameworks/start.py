@@ -4,10 +4,13 @@ import re
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 from rich import print as rprint
 from rich.console import Console
 from rich.table import Table
+
+from java_web_frameworks import report as html_report
 
 DEBUG = False
 USE_DOCKER_BUILD_CACHE = False
@@ -277,3 +280,7 @@ def run():
 
     console = Console()
     console.print(table)
+
+    site_path = Path(os.getcwd()) / "site" / "index.html"
+    html_report.render(Path(results_path), site_path)
+    rprint(f"HTML report written to {site_path}")

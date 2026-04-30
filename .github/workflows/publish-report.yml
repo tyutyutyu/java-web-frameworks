@@ -1,0 +1,87 @@
+name: Publish Benchmark Report
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_benchmark:
+        description: "Run the full Docker benchmark (slow). If false, only re-render the report from the committed results.json."
+        required: false
+        default: "true"
+  schedule:
+    # First day of every month at 04:00 UTC.
+    - cron: "0 4 1 * *"
+  push:
+    branches:
+      - master
+    paths:
+      - "java_web_frameworks/**"
+      - "benchmark-results/results.json"
+      - ".github/workflows/publish-report.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-report:
+    name: Build report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install Python
+        run: uv python install 3.12
+
+      - name: Sync dependencies
+        run: uv sync --frozen
+
+      - name: Set up Java
+        if: ${{ github.event_name != 'push' && (github.event.inputs.run_benchmark == 'true' || github.event_name == 'schedule') }}
+        uses: actions/setup-java@v5
+        with:
+          java-version: "25"
+          distribution: "temurin"
+
+      - name: Install dive
+        if: ${{ github.event_name != 'push' && (github.event.inputs.run_benchmark == 'true' || github.event_name == 'schedule') }}
+        run: |
+          DIVE_VERSION="0.13.1"
+          curl -fsSL -o dive.deb "https://github.com/wagoodman/dive/releases/download/v${DIVE_VERSION}/dive_${DIVE_VERSION}_linux_amd64.deb"
+          sudo apt-get install -y ./dive.deb
+          rm dive.deb
+
+      - name: Run benchmark
+        if: ${{ github.event_name != 'push' && (github.event.inputs.run_benchmark == 'true' || github.event_name == 'schedule') }}
+        run: uv run start
+
+      - name: Render report from committed results
+        if: ${{ github.event_name == 'push' || github.event.inputs.run_benchmark == 'false' }}
+        run: uv run report
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build-report
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
