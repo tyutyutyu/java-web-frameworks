@@ -1,23 +1,28 @@
-[tool.poetry]
+[project]
 name = "java-web-frameworks"
-version = "0.1.0"
-description = ""
-authors = ["István Földházi <istvan.foldhazi@gmail.com>"]
-license = "MIT"
+version = "0.2.0"
+description = "Benchmark suite comparing Spring Boot, Quarkus, Micronaut and Helidon (basic & native)."
 readme = "README.md"
-packages = [
-    { include = "java_web_frameworks", from = "." },
+license = { text = "MIT" }
+authors = [
+    { name = "István Földházi", email = "istvan.foldhazi@gmail.com" },
+]
+requires-python = ">=3.12"
+dependencies = [
+    "jinja2>=3.1.4",
+    "rich>=15.0.0",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-rich = "^15.0.0"
-
+[project.scripts]
+start = "java_web_frameworks.__main__:main"
+report = "java_web_frameworks.report:main"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["java_web_frameworks"]
 
-[tool.poetry.scripts]
-start = "java_web_frameworks.__main__:main"
+[tool.uv]
+package = true

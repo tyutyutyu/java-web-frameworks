@@ -1,5 +1,23 @@
 # Java Web Frameworks
 
+Benchmark suite comparing Spring Boot, Quarkus, Micronaut and Helidon
+(both JVM and GraalVM native builds).
+
+## Usage
+
+The orchestrator is a small Python project managed with [uv](https://docs.astral.sh/uv/).
+
+```bash
+# Run the full benchmark (requires docker + dive)
+uv run start
+
+# Re-render only the HTML report from benchmark-results/results.json
+uv run report
+```
+
+The HTML report is written to `site/index.html` and is published to
+GitHub Pages by the `Publish Benchmark Report` workflow.
+
 ## Results
 
 

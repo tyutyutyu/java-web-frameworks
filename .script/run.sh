@@ -2,4 +2,4 @@
 
 set -e
 
-poetry run start
+uv run start
