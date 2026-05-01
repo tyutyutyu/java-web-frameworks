@@ -1,4 +1,4 @@
-FROM ghcr.io/graalvm/native-image-community:22.0.0-muslib-ol8-20240319 as builder
+FROM ghcr.io/graalvm/native-image-community:25.0.2-muslib AS builder
 
 COPY pom.xml /home/app/pom.xml
 COPY .mvn /home/app/.mvn
@@ -9,7 +9,7 @@ WORKDIR /home/app
 RUN --mount=type=cache,target=/root/.m2 ./mvnw --batch-mode package -Pnative -DskipTests
 
 
-FROM alpine as runner
+FROM alpine AS runner
 
 RUN apk add --no-cache coreutils
 
