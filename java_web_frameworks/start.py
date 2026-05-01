@@ -205,34 +205,47 @@ def run_maven(project: str, build_type: str):
     )
 
 
+def run_case(results: dict, failed_cases: list[str], project: str, build_type: str):
+    case_name = f"{project}_{build_type}"
+    try:
+        key, value = run_maven(project, build_type)
+        results[key] = value
+    except Exception as exc:
+        failed_cases.append(case_name)
+        rprint(
+            f"[yellow]Benchmark case failed: {case_name}. Continuing with remaining cases.[/yellow]"
+        )
+        if DEBUG:
+            rprint(f"[yellow]{exc}[/yellow]")
+
+
 def run():
     rprint("Running benchmarks...")
 
     results = dict()
+    failed_cases: list[str] = []
 
-    res = run_maven("micronaut-maven", "basic")
-    results[res[0]] = res[1]
+    cases = [
+        ("micronaut-maven", "basic"),
+        ("micronaut-maven", "native"),
+        ("quarkus-maven", "basic"),
+        ("quarkus-maven", "native"),
+        ("spring-boot-maven", "basic"),
+        ("spring-boot-maven", "native"),
+        ("helidon-maven", "basic"),
+        ("helidon-maven", "native"),
+    ]
 
-    res = run_maven("micronaut-maven", "native")
-    results[res[0]] = res[1]
+    for project, build_type in cases:
+        run_case(results, failed_cases, project, build_type)
 
-    res = run_maven("quarkus-maven", "basic")
-    results[res[0]] = res[1]
+    if failed_cases:
+        rprint(
+            f"[yellow]Skipped {len(failed_cases)} failed benchmark case(s): {', '.join(failed_cases)}[/yellow]"
+        )
 
-    res = run_maven("quarkus-maven", "native")
-    results[res[0]] = res[1]
-
-    res = run_maven("spring-boot-maven", "basic")
-    results[res[0]] = res[1]
-
-    res = run_maven("spring-boot-maven", "native")
-    results[res[0]] = res[1]
-
-    res = run_maven("helidon-maven", "basic")
-    results[res[0]] = res[1]
-
-    res = run_maven("helidon-maven", "native")
-    results[res[0]] = res[1]
+    if not results:
+        raise RuntimeError("All benchmark cases failed. No report generated.")
 
     rprint(
         "----------------------------------------------------------------------------------"
