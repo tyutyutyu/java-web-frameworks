@@ -205,25 +205,10 @@ def run_maven(project: str, build_type: str):
     )
 
 
-def run_case(results: dict, failed_cases: list[str], project: str, build_type: str):
-    case_name = f"{project}_{build_type}"
-    try:
-        key, value = run_maven(project, build_type)
-        results[key] = value
-    except Exception as exc:
-        failed_cases.append(case_name)
-        rprint(
-            f"[yellow]Benchmark case failed: {case_name}. Continuing with remaining cases.[/yellow]"
-        )
-        if DEBUG:
-            rprint(f"[yellow]{exc}[/yellow]")
-
-
 def run():
     rprint("Running benchmarks...")
 
     results = dict()
-    failed_cases: list[str] = []
 
     cases = [
         ("micronaut-maven", "basic"),
@@ -237,15 +222,8 @@ def run():
     ]
 
     for project, build_type in cases:
-        run_case(results, failed_cases, project, build_type)
-
-    if failed_cases:
-        rprint(
-            f"[yellow]Skipped {len(failed_cases)} failed benchmark case(s): {', '.join(failed_cases)}[/yellow]"
-        )
-
-    if not results:
-        raise RuntimeError("All benchmark cases failed. No report generated.")
+        key, value = run_maven(project, build_type)
+        results[key] = value
 
     rprint(
         "----------------------------------------------------------------------------------"
