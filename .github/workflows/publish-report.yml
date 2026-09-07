@@ -48,7 +48,7 @@ jobs:
 
       - name: Set up Java
         if: ${{ github.event_name != 'push' && (github.event.inputs.run_benchmark == 'true' || github.event_name == 'schedule') }}
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           java-version: "25"
           distribution: "temurin"
