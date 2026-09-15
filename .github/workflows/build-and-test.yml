@@ -22,7 +22,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
-          java-version: '25'
+          java-version: '25.0.4+101.0.LTS'
           distribution: 'temurin'
           cache: maven
           cache-dependency-path: projects/spring-boot-maven/pom.xml
@@ -42,7 +42,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
-          java-version: '25'
+          java-version: '25.0.4+101.0.LTS'
           distribution: 'temurin'
           cache: maven
           cache-dependency-path: projects/quarkus-maven/pom.xml
@@ -62,7 +62,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
-          java-version: '25'
+          java-version: '25.0.4+101.0.LTS'
           distribution: 'temurin'
           cache: maven
           cache-dependency-path: projects/micronaut-maven/pom.xml
@@ -82,7 +82,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
-          java-version: '25'
+          java-version: '25.0.4+101.0.LTS'
           distribution: 'temurin'
           cache: maven
           cache-dependency-path: projects/helidon-maven/pom.xml
